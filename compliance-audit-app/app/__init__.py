@@ -42,7 +42,7 @@ def create_app(config_name=None):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     # Register blueprints
-    from app.api import auth_bp, contracts_bp, clauses_bp, reports_bp, alerts_bp, chat_bp
+    from app.api import auth_bp, contracts_bp, clauses_bp, reports_bp, alerts_bp, chat_bp, code_gen_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(contracts_bp, url_prefix='/api/contracts')
@@ -50,6 +50,7 @@ def create_app(config_name=None):
     app.register_blueprint(reports_bp, url_prefix='/api/reports')
     app.register_blueprint(alerts_bp, url_prefix='/api/alerts')
     app.register_blueprint(chat_bp, url_prefix='/api/chat')
+    app.register_blueprint(code_gen_bp, url_prefix='/api/code-gen')
     
     # Register main routes (for serving the UI)
     from app import routes
