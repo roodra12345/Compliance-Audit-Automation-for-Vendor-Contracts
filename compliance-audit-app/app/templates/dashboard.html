@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Compliance Audit System{% endblock %}
+
+{% block content %}
+<div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold text-gray-900">Compliance Dashboard</h1>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-6">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Total Contracts -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-file-contract text-3xl text-indigo-600"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total Contracts</dt>
+                                <dd class="text-3xl font-semibold text-gray-900" id="totalContracts">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- High Risk Contracts -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-3xl text-red-600"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">High Risk</dt>
+                                <dd class="text-3xl font-semibold text-red-600" id="highRiskContracts">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upcoming Audits -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-calendar-check text-3xl text-yellow-600"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Upcoming Audits</dt>
+                                <dd class="text-3xl font-semibold text-yellow-600" id="upcomingAudits">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Required -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-tasks text-3xl text-green-600"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Action Required</dt>
+                                <dd class="text-3xl font-semibold text-green-600" id="actionRequired">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <!-- Compliance Status Chart -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Compliance Status</h3>
+                <div class="relative" style="height: 300px;">
+                    <canvas id="complianceChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Risk Distribution Chart -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Risk Distribution</h3>
+                <div class="relative" style="height: 300px;">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Alerts -->
+        <div class="mt-8 bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Recent Alerts</h3>
+            </div>
+            <div class="divide-y divide-gray-200" id="recentAlerts">
+                <div class="p-6 text-center text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+                    <p class="mt-2">Loading alerts...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Expiring Contracts -->
+        <div class="mt-8 bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Contracts Expiring Soon</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contract</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days Left</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="expiringContracts">
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                <i class="fas fa-spinner fa-spin"></i> Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let complianceChart, riskChart;
+    
+    // Load dashboard data
+    async function loadDashboardData() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/reports/dashboard-stats`);
+            const data = response.data;
+            
+            // Update stats
+            document.getElementById('totalContracts').textContent = data.total_contracts || 0;
+            document.getElementById('highRiskContracts').textContent = data.contracts_by_risk?.high || 0;
+            document.getElementById('upcomingAudits').textContent = data.upcoming_audits || 0;
+            document.getElementById('actionRequired').textContent = data.action_required_clauses || 0;
+            
+            // Update charts
+            updateComplianceChart(data.contracts_by_status);
+            updateRiskChart(data.contracts_by_risk);
+            
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            showToast('Failed to load dashboard data', 'error');
+        }
+    }
+    
+    // Update compliance status chart
+    function updateComplianceChart(statusData) {
+        const ctx = document.getElementById('complianceChart').getContext('2d');
+        
+        if (complianceChart) {
+            complianceChart.destroy();
+        }
+        
+        complianceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Compliant', 'Non-Compliant', 'Pending', 'Review Required'],
+                datasets: [{
+                    data: [
+                        statusData?.compliant || 0,
+                        statusData?.non_compliant || 0,
+                        statusData?.pending || 0,
+                        statusData?.review_required || 0
+                    ],
+                    backgroundColor: [
+                        '#10B981',
+                        '#EF4444',
+                        '#F59E0B',
+                        '#6366F1'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Update risk distribution chart
+    function updateRiskChart(riskData) {
+        const ctx = document.getElementById('riskChart').getContext('2d');
+        
+        if (riskChart) {
+            riskChart.destroy();
+        }
+        
+        riskChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Low', 'Medium', 'High'],
+                datasets: [{
+                    label: 'Number of Contracts',
+                    data: [
+                        riskData?.low || 0,
+                        riskData?.medium || 0,
+                        riskData?.high || 0
+                    ],
+                    backgroundColor: [
+                        '#10B981',
+                        '#F59E0B',
+                        '#EF4444'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Load recent alerts
+    async function loadRecentAlerts() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/alerts?is_active=true&per_page=5`);
+            const alerts = response.data.alerts;
+            
+            const alertsContainer = document.getElementById('recentAlerts');
+            
+            if (alerts.length === 0) {
+                alertsContainer.innerHTML = `
+                    <div class="p-6 text-center text-gray-500">
+                        <i class="fas fa-bell-slash text-3xl mb-2"></i>
+                        <p>No active alerts</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            alertsContainer.innerHTML = alerts.map(alert => `
+                <div class="p-4 hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/alerts'">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-${getSeverityColor(alert.severity)}-500 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">${alert.title}</p>
+                                <p class="text-sm text-gray-500">${alert.vendor} - ${alert.contract}</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            ${formatDate(alert.trigger_date)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error('Error loading alerts:', error);
+        }
+    }
+    
+    // Load expiring contracts
+    async function loadExpiringContracts() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/contracts?per_page=5`);
+            const contracts = response.data.contracts;
+            
+            // Filter contracts expiring in next 90 days
+            const today = new Date();
+            const ninetyDaysFromNow = new Date(today.getTime() + (90 * 24 * 60 * 60 * 1000));
+            
+            const expiringContracts = contracts.filter(contract => {
+                if (!contract.end_date) return false;
+                const endDate = new Date(contract.end_date);
+                return endDate <= ninetyDaysFromNow && endDate >= today;
+            }).sort((a, b) => new Date(a.end_date) - new Date(b.end_date));
+            
+            const tbody = document.getElementById('expiringContracts');
+            
+            if (expiringContracts.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            No contracts expiring in the next 90 days
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = expiringContracts.map(contract => {
+                const daysLeft = Math.ceil((new Date(contract.end_date) - today) / (1000 * 60 * 60 * 24));
+                
+                return `
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/contracts'">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${contract.contract_number}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${contract.vendor_name}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${formatDate(contract.end_date)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="text-${daysLeft <= 30 ? 'red' : daysLeft <= 60 ? 'yellow' : 'green'}-600 font-medium">
+                                ${daysLeft} days
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getRiskColor(contract.risk_level)}-100 text-${getRiskColor(contract.risk_level)}-800">
+                                ${contract.risk_level}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+        } catch (error) {
+            console.error('Error loading contracts:', error);
+        }
+    }
+    
+    // Helper functions
+    function getSeverityColor(severity) {
+        const colors = {
+            'critical': 'red',
+            'high': 'red',
+            'medium': 'yellow',
+            'low': 'green'
+        };
+        return colors[severity] || 'gray';
+    }
+    
+    function getRiskColor(risk) {
+        const colors = {
+            'high': 'red',
+            'medium': 'yellow',
+            'low': 'green'
+        };
+        return colors[risk] || 'gray';
+    }
+    
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboardData();
+        loadRecentAlerts();
+        loadExpiringContracts();
+        
+        // Refresh data every 30 seconds
+        setInterval(() => {
+            loadDashboardData();
+            loadRecentAlerts();
+            loadExpiringContracts();
+        }, 30000);
+    });
+</script>
+{% endblock %}
