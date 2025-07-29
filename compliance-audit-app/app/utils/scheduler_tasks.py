@@ -6,7 +6,6 @@ from app.services import EmailService
 def setup_scheduler(app, scheduler):
     """Setup scheduled tasks"""
     
-    @scheduler.task('cron', id='check_contract_expiry', hour=9, minute=0)
     def check_contract_expiry():
         """Check for expiring contracts daily"""
         with app.app_context():
@@ -48,7 +47,6 @@ def setup_scheduler(app, scheduler):
             
             db.session.commit()
     
-    @scheduler.task('cron', id='check_audit_due', hour=9, minute=30)
     def check_audit_due():
         """Check for contracts due for audit"""
         with app.app_context():
@@ -84,7 +82,6 @@ def setup_scheduler(app, scheduler):
             
             db.session.commit()
     
-    @scheduler.task('cron', id='check_high_risk_contracts', hour=10, minute=0)
     def check_high_risk_contracts():
         """Check high-risk contracts weekly (Monday)"""
         with app.app_context():
@@ -108,7 +105,6 @@ def setup_scheduler(app, scheduler):
                 
                 db.session.commit()
     
-    @scheduler.task('cron', id='send_daily_digest', hour=8, minute=0)
     def send_daily_digest():
         """Send daily digest of alerts to users"""
         with app.app_context():
@@ -145,7 +141,6 @@ def setup_scheduler(app, scheduler):
                 if contracts_due_audit:
                     email_service.send_audit_reminder(user.email, contracts_due_audit)
     
-    @scheduler.task('cron', id='process_pending_alerts', hour='*/1')
     def process_pending_alerts():
         """Process and send pending alerts every hour"""
         with app.app_context():
@@ -172,7 +167,6 @@ def setup_scheduler(app, scheduler):
             
             db.session.commit()
     
-    @scheduler.task('cron', id='cleanup_old_alerts', hour=2, minute=0)
     def cleanup_old_alerts():
         """Clean up old acknowledged alerts (older than 90 days)"""
         with app.app_context():
@@ -187,3 +181,57 @@ def setup_scheduler(app, scheduler):
                 alert.is_active = False
             
             db.session.commit()
+    
+    # Add scheduled jobs
+    scheduler.add_job(
+        func=check_contract_expiry,
+        trigger='cron',
+        id='check_contract_expiry',
+        hour=9,
+        minute=0,
+        replace_existing=True
+    )
+    
+    scheduler.add_job(
+        func=check_audit_due,
+        trigger='cron',
+        id='check_audit_due',
+        hour=9,
+        minute=30,
+        replace_existing=True
+    )
+    
+    scheduler.add_job(
+        func=check_high_risk_contracts,
+        trigger='cron',
+        id='check_high_risk_contracts',
+        hour=10,
+        minute=0,
+        replace_existing=True
+    )
+    
+    scheduler.add_job(
+        func=send_daily_digest,
+        trigger='cron',
+        id='send_daily_digest',
+        hour=8,
+        minute=0,
+        replace_existing=True
+    )
+    
+    scheduler.add_job(
+        func=process_pending_alerts,
+        trigger='cron',
+        id='process_pending_alerts',
+        hour='*/1',
+        replace_existing=True
+    )
+    
+    scheduler.add_job(
+        func=cleanup_old_alerts,
+        trigger='cron',
+        id='cleanup_old_alerts',
+        hour=2,
+        minute=0,
+        replace_existing=True
+    )
