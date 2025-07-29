@@ -1,22 +1,30 @@
 import json
 from typing import List, Dict, Optional
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 import re
 from datetime import datetime, date
+import os
 
 class AIService:
-    def __init__(self, endpoint: str, key: str, deployment_name: str):
+    def __init__(self, endpoint: str = None, key: str = None, deployment_name: str = None):
         self.endpoint = endpoint
         self.key = key
-        self.deployment_name = deployment_name
+        self.deployment_name = deployment_name or 'gpt-4'
         self.client = None
         
-        if endpoint and key:
+        # Try OpenAI API first (simpler setup)
+        openai_key = os.environ.get('OPENAI_API_KEY')
+        if openai_key:
+            self.client = OpenAI(api_key=openai_key)
+            self.is_azure = False
+        # Fall back to Azure OpenAI if configured
+        elif endpoint and key:
             self.client = AzureOpenAI(
                 azure_endpoint=endpoint,
                 api_key=key,
                 api_version="2024-02-01"
             )
+            self.is_azure = True
     
     def analyze_contract(self, contract_text: str) -> Dict[str, any]:
         """Analyze contract text and extract key information"""
@@ -65,8 +73,11 @@ class AIService:
         """
         
         try:
+            # Use appropriate model name based on API type
+            model_name = self.deployment_name if self.is_azure else "gpt-4"
+            
             response = self.client.chat.completions.create(
-                model=self.deployment_name,
+                model=model_name,
                 messages=[
                     {"role": "system", "content": "You are a contract analysis expert. Extract information accurately and return valid JSON."},
                     {"role": "user", "content": prompt.format(text=text[:4000])}  # Limit text length
